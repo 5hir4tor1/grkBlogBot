@@ -1,0 +1,19 @@
+{
+  "name": "grkblogbot",
+  "version": "1.0.0",
+  "description": "Check update of the blogs of Nanamorichu Goraku-bu.",
+  "main": "exec.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "albNo273 / 5hir4tor1",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.1.4",
+    "cheerio-httpcli": "^0.6.10",
+    "confu": "0.0.3",
+    "feedparser": "^2.1.0",
+    "request": "^2.79.0",
+    "twitter": "^1.7.0"
+  }
+}
