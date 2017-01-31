@@ -13,8 +13,12 @@
 ## 使ってるもの
 
 node.js (v7.4.0 で動作します)  
+<s>
 - [cheerio-httpcli](https://www.npmjs.com/package/cheerio-httpcli)  
 アーリーウィング公式ブログの HTML スクレイピングに使用 <font color="Gray"><s> RSS フィードつけてくれ</s></font>
+</s>  
+アーリーウィングブログにも RSS があったのでそっちを使うようにしました。
+(Thx: [@dolciss](https://twitter.com/L_tan/status/826436855105097728))
 - [twitter](https://www.npmjs.com/package/twitter)  
 ツイート用
 - [confu](https://www.npmjs.com/package/confu)  
