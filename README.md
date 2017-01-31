@@ -2,7 +2,7 @@
 
 ## これなに
 気付いたら先代ごらくブログbot ([@gorakublog](https://twitter.com/gorakublog)) が1年半前に死んでいたので作りました。  
-更新を検知するとタイトルとURLが ごらくブログ v2 ([@grk_b_log_bot](https://twitter.com/grk_b_log_bot)) からツイートされます。  
+更新を検知するとタイトルとURLが ごらくブログbot v2 ([@grk_b_log_bot](https://twitter.com/grk_b_log_bot)) からツイートされます。  
 更新確認は3分毎です。
 
 ## つかいかた

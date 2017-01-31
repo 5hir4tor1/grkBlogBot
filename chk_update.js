@@ -19,6 +19,7 @@ var bot = new twitter({
     access_token_secret: conf.key.acc_token_sec
 });
 
+// RSS の URL
 var shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml';
 var yuka_rss = 'http://www.earlywing.co.jp/category/blog/feed/';
 var minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml';
@@ -26,32 +27,10 @@ var rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
 
 exports.func = function () {
 
-    /** 
-     * 確認前の最新のエントリタイトルを格納
-     * [0]: 三上枝織   shiori
-     * [1]: 大坪由佳     yuka
-     * [2]: 津田美波   minami
-     * [3]: 大久保瑠美   rumi    
-     */
-    var title_arr = new Array(4);
-
-    /**
-     * 確認時の記事タイトルとリンクを格納
-     * [0]: 記事タイトル(整形後)
-     * [1]: 記事リンク
-     */
-    var shiori = new Array(2);
-    var yuka = new Array(2);
-    var minami = new Array(2);
-    var rumi = new Array(2);
-
-    // 更新の有無フラグ
-    var flg = false;
-
     // 非同期処理
     async.waterfall([
         readRecentTitle,
-        checkAmebloUpdate,
+        checkUpdate,
         updateLog,
     ], function (err) {
         if (err)
@@ -64,20 +43,30 @@ exports.func = function () {
     function readRecentTitle(callback) {
         setTimeout(function () {
             var text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
-            // \r を除去し、\n で配列に分割
-            title_arr = text.replace(/\r/g, "").split("\n");
+            /** 
+             * 確認前の最新の記事タイトルを格納
+             * [0]: 三上枝織   shiori
+             * [1]: 大坪由佳     yuka
+             * [2]: 津田美波   minami
+             * [3]: 大久保瑠美   rumi    
+             */
+            var title_arr = text.replace(/\r/g, "").split("\n");
             console.log('Recent titles loaded.');
 
-            callback(null);
+            callback(null, title_arr);
         }, 100);
     }
 
-    // 2. アメブロ組のRSSフィードを確認
-    function checkAmebloUpdate(callback) {
+    // 2. RSSフィードを確認
+    function checkUpdate(title_arr, callback) {
+
+        // 更新の有無フラグ
+        var flg = false;
+
         setTimeout(function () {
             checkRSS(shiori_rss, function (err, result) {
                 if (!err) {
-                    shiori = result;
+                    var shiori = result;
                     // console.log(shiori);
                     console.log('shiori-recent: ' + title_arr[0]);
                     console.log('shiori-result: ' + shiori[0]);
@@ -91,7 +80,7 @@ exports.func = function () {
 
             checkRSS(yuka_rss, function (err, result) {
                 if (!err) {
-                    yuka = result;
+                    var yuka = result;
                     // console.log(yuka);
                     console.log('yuka-recent:   ' + title_arr[1]);
                     console.log('yuka-result:   ' + yuka[0]);
@@ -105,9 +94,8 @@ exports.func = function () {
 
             checkRSS(minami_rss, function (err, result) {
                 if (!err) {
-                    minami = result;
+                    var minami = result;
                     // console.log(minami);
-
                     console.log('minami-recent: ' + title_arr[2]);
                     console.log('minami-result: ' + minami[0]);
 
@@ -120,9 +108,8 @@ exports.func = function () {
 
             checkRSS(rumi_rss, function (err, result) {
                 if (!err) {
-                    rumi = result;
+                    var rumi = result;
                     // console.log(rumi);
-
                     console.log('rumi-recent:   ' + title_arr[3]);
                     console.log('rumi-result:   ' + rumi[0]);
 
@@ -133,12 +120,12 @@ exports.func = function () {
                 }
             });
 
-            callback(null);
+            callback(null, flg);
         }, 500);
     }
 
-    // 4. 記事タイトルログの更新
-    function updateLog(callback) {
+    // 3. 記事タイトルログの更新
+    function updateLog(flg, callback) {
         setTimeout(function () {
             if (flg) {
                 var text = shiori[0] + '\n' + yuka[0] + '\n'
@@ -156,7 +143,7 @@ exports.func = function () {
             }
 
             callback(null);
-        }, 2500);
+        }, 3000);
     }
 
 }
@@ -188,7 +175,7 @@ function tweetUpdate(head, data) {
 /**
  * RSSフィードの確認
  * @param url       RSS の URL
- * @param callback  コールバック(第2引数にタイトルとリンクが入る)
+ * @param callback  array - [0]: 記事タイトル [1]: リンク
  */
 function checkRSS(url, callback) {
 
