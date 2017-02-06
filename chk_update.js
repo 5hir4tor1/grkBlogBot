@@ -1,11 +1,10 @@
 /* ごらくブログbotリバイバル */
 
-var twitter = require('twitter');
-var confu = require('confu');
-var fs = require('fs');
-var async = require('async');
-var FeedParser = require('feedparser');
-var request = require('request');
+var twitter = require('twitter'),
+    confu = require('confu'),
+    fs = require('fs'),
+    FeedParser = require('feedparser'),
+    request = require('request');
 
 // bot の CK/CS 読み込み
 var conf = confu('.', 'config', 'key.json');
@@ -20,131 +19,137 @@ var bot = new twitter({
 });
 
 // RSS の URL
-var shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml';
-var yuka_rss = 'http://www.earlywing.co.jp/category/blog/feed/';
-var minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml';
-var rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
+var shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml',
+    yuka_rss = 'http://www.earlywing.co.jp/category/blog/feed/',
+    minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml',
+    rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
 
 exports.func = function () {
 
-    // 非同期処理
-    async.waterfall([
-        readRecentTitle,
-        checkUpdate,
-        updateLog,
-    ], function (err) {
-        if (err)
-            throw err;
-        else
-            console.log('All processing is completed.');
-    });
+    Promise.resolve()
+        // 1. 直近の記事タイトルを読み込む
+        .then(function () {
+            return new Promise(function (resolve, reject) {
+                var text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
+                /** 
+                 * 確認前の最新の記事タイトルを格納
+                 * [0]: 三上枝織   shiori
+                 * [1]: 大坪由佳     yuka
+                 * [2]: 津田美波   minami
+                 * [3]: 大久保瑠美   rumi    
+                 */
+                var title_arr = text.replace(/\r/g, "").split("\n");
+                console.log('Recent titles loaded.');
 
-    // 1. 直近の記事タイトルを読み込む
-    function readRecentTitle(callback) {
-        setTimeout(function () {
-            var text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
-            /** 
-             * 確認前の最新の記事タイトルを格納
-             * [0]: 三上枝織   shiori
-             * [1]: 大坪由佳     yuka
-             * [2]: 津田美波   minami
-             * [3]: 大久保瑠美   rumi    
-             */
-            var title_arr = text.replace(/\r/g, "").split("\n");
-            console.log('Recent titles loaded.');
+                resolve(title_arr);
+            });
+        })
+        // 2. RSSフィードを確認
+        .then(function (title_arr) {
+            return new Promise(function (resolve, reject) {
 
-            callback(null, title_arr);
-        }, 100);
-    }
+                Promise.all([
+                    new Promise(function (resolve, reject) {
+                        checkRSS(shiori_rss, function (err, result) {
+                            if (!err) {
+                                var shiori = result;
+                                // console.log(shiori);
+                                console.log('shiori-recent: ' + title_arr[0]);
+                                console.log('shiori-result: ' + shiori[0]);
 
-    // 2. RSSフィードを確認
-    function checkUpdate(title_arr, callback) {
+                                if (title_arr[0] != shiori[0]) {
+                                    tweetUpdate('三上枝織', shiori);
+                                    resolve(true);
+                                } else
+                                    resolve(false);
+                            }
+                        });
+                    }),
+                    new Promise(function (resolve, reject) {
+                        checkRSS(yuka_rss, function (err, result) {
+                            if (!err) {
+                                var yuka = result;
+                                // console.log(yuka);
+                                console.log('yuka-recent:   ' + title_arr[1]);
+                                console.log('yuka-result:   ' + yuka[0]);
 
-        // 更新の有無フラグ
-        var flg = false;
+                                if (title_arr[1] != yuka[0] && yuka[0].match(/大坪/)) {
+                                    tweetUpdate('大坪由佳', yuka);
+                                    resolve(true);
+                                } else
+                                    resolve(false);
+                            }
+                        });
+                    }),
+                    new Promise(function (resolve, reject) {
+                        checkRSS(minami_rss, function (err, result) {
+                            if (!err) {
+                                var minami = result;
+                                // console.log(minami);
+                                console.log('minami-recent: ' + title_arr[2]);
+                                console.log('minami-result: ' + minami[0]);
 
-        setTimeout(function () {
-            checkRSS(shiori_rss, function (err, result) {
-                if (!err) {
-                    var shiori = result;
-                    // console.log(shiori);
-                    console.log('shiori-recent: ' + title_arr[0]);
-                    console.log('shiori-result: ' + shiori[0]);
+                                if (title_arr[2] != minami[0]) {
+                                    tweetUpdate('津田美波', minami);
+                                    resolve(true);
+                                } else
+                                    resolve(false);
+                            }
+                        });
+                    }),
+                    new Promise(function (resolve, reject) {
+                        checkRSS(rumi_rss, function (err, result) {
+                            if (!err) {
+                                var rumi = result;
+                                // console.log(rumi);
+                                console.log('rumi-recent:   ' + title_arr[3]);
+                                console.log('rumi-result:   ' + rumi[0]);
 
-                    if (title_arr[0] != shiori[0]) {
-                        tweetUpdate('三上枝織', shiori);
-                        flg = true;
-                    }
+                                if (title_arr[3] != rumi[0]) {
+                                    tweetUpdate('大久保瑠美', rumi);
+                                    resolve(true);
+                                } else
+                                    resolve(false);
+                            }
+                        });
+                    })
+                ]).then(
+                    function (results) {
+                        // console.log(results);
+                        if(results.indexOf(true) >= 0)
+                            resolve(true);
+                        else
+                            resolve(false);
+                    });
+            })
+        })
+        // 3. 記事タイトルログの更新
+        .then(function (flg) {
+            return new Promise(function (resolve, reject) {
+                if (flg) {
+                    var text = shiori[0] + '\n' + yuka[0] + '\n'
+                        + minami[0] + '\n' + rumi[0];
+                    fs.writeFileSync('b_log.txt', text, function (err) {
+                        if (!err)
+                            console.log('Log update succeeded.');
+                        else {
+                            console.log('Log update failed.');
+                            console.log(err);
+                        }
+                    });
+                    resolve(null);
+                } else {
+                    console.log('Log is not updated.');
+                    resolve(null);
                 }
             });
-
-            checkRSS(yuka_rss, function (err, result) {
-                if (!err) {
-                    var yuka = result;
-                    // console.log(yuka);
-                    console.log('yuka-recent:   ' + title_arr[1]);
-                    console.log('yuka-result:   ' + yuka[0]);
-
-                    if (title_arr[1] != yuka[0] && yuka[0].match(/大坪/)) {
-                        tweetUpdate('大坪由佳', yuka);
-                        flg = true;
-                    }
-                }
-            });
-
-            checkRSS(minami_rss, function (err, result) {
-                if (!err) {
-                    var minami = result;
-                    // console.log(minami);
-                    console.log('minami-recent: ' + title_arr[2]);
-                    console.log('minami-result: ' + minami[0]);
-
-                    if (title_arr[2] != minami[0]) {
-                        tweetUpdate('津田美波', minami);
-                        flg = true;
-                    }
-                }
-            });
-
-            checkRSS(rumi_rss, function (err, result) {
-                if (!err) {
-                    var rumi = result;
-                    // console.log(rumi);
-                    console.log('rumi-recent:   ' + title_arr[3]);
-                    console.log('rumi-result:   ' + rumi[0]);
-
-                    if (title_arr[3] != rumi[0]) {
-                        tweetUpdate('大久保瑠美', rumi);
-                        flg = true;
-                    }
-                }
-            });
-
-            callback(null, flg);
-        }, 500);
-    }
-
-    // 3. 記事タイトルログの更新
-    function updateLog(flg, callback) {
-        setTimeout(function () {
-            if (flg) {
-                var text = shiori[0] + '\n' + yuka[0] + '\n'
-                    + minami[0] + '\n' + rumi[0];
-                fs.writeFileSync('b_log.txt', text, function (err) {
-                    if (!err)
-                        console.log('Log update succeeded.');
-                    else {
-                        console.log('Log update failed.');
-                        console.log(err);
-                    }
-                });
-            } else {
-                console.log('Log is not updated.');
-            }
-
-            callback(null);
-        }, 3000);
-    }
+        })
+        .then(function (value) {
+            console.log('All processing is done.');
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 
 }
 

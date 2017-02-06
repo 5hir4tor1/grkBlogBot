@@ -23,8 +23,6 @@ node.js (v7.4.0 で動作します)
 ツイート用
 - [confu](https://www.npmjs.com/package/confu)  
 bot の CK/CS を読み込むのに使用  
-- [async](https://www.npmjs.com/package/async)  
-更新確認時の非同期処理用
 - [feedparser](https://www.npmjs.com/package/feedparser)  
 RSS フィードの読み込みに使用
 - [request](https://www.npmjs.com/package/request)  
