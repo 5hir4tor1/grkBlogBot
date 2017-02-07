@@ -24,6 +24,8 @@ var shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml',
     minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml',
     rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
 
+var shiori, yuka, minami, rumi;
+
 exports.func = function () {
 
     Promise.resolve()
@@ -47,12 +49,11 @@ exports.func = function () {
         // 2. RSSフィードを確認
         .then(function (title_arr) {
             return new Promise(function (resolve, reject) {
-
                 Promise.all([
                     new Promise(function (resolve, reject) {
                         checkRSS(shiori_rss, function (err, result) {
                             if (!err) {
-                                var shiori = result;
+                                shiori = result;
                                 // console.log(shiori);
                                 console.log('shiori-recent: ' + title_arr[0]);
                                 console.log('shiori-result: ' + shiori[0]);
@@ -68,7 +69,7 @@ exports.func = function () {
                     new Promise(function (resolve, reject) {
                         checkRSS(yuka_rss, function (err, result) {
                             if (!err) {
-                                var yuka = result;
+                                yuka = result;
                                 // console.log(yuka);
                                 console.log('yuka-recent:   ' + title_arr[1]);
                                 console.log('yuka-result:   ' + yuka[0]);
@@ -84,7 +85,7 @@ exports.func = function () {
                     new Promise(function (resolve, reject) {
                         checkRSS(minami_rss, function (err, result) {
                             if (!err) {
-                                var minami = result;
+                                minami = result;
                                 // console.log(minami);
                                 console.log('minami-recent: ' + title_arr[2]);
                                 console.log('minami-result: ' + minami[0]);
@@ -100,7 +101,7 @@ exports.func = function () {
                     new Promise(function (resolve, reject) {
                         checkRSS(rumi_rss, function (err, result) {
                             if (!err) {
-                                var rumi = result;
+                                rumi = result;
                                 // console.log(rumi);
                                 console.log('rumi-recent:   ' + title_arr[3]);
                                 console.log('rumi-result:   ' + rumi[0]);
@@ -116,7 +117,7 @@ exports.func = function () {
                 ]).then(
                     function (results) {
                         // console.log(results);
-                        if(results.indexOf(true) >= 0)
+                        if (results.indexOf(true) >= 0)
                             resolve(true);
                         else
                             resolve(false);
@@ -162,7 +163,6 @@ function tweetUpdate(head, data) {
 
     var tweet_body = '【ブログ更新】' + head + ': ' + data[0] + '\n' + data[1];
     console.log(tweet_body);
-
     bot.post(
         'statuses/update',
         { status: tweet_body },
