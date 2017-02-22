@@ -1,17 +1,17 @@
 /* ごらくブログbotリバイバル */
 
-var twitter = require('twitter'),
-    confu = require('confu'),
-    fs = require('fs'),
-    FeedParser = require('feedparser'),
-    request = require('request');
+const twitter = require('twitter'),
+      confu = require('confu'),
+      fs = require('fs'),
+      FeedParser = require('feedparser'),
+      request = require('request');
 
 // bot の CK/CS 読み込み
-var conf = confu('.', 'config', 'key.json');
+const conf = confu('.', 'config', 'key.json');
 // console.log(conf);
 
 // token 設定
-var bot = new twitter({
+const bot = new twitter({
     consumer_key: conf.key.cons_key,
     consumer_secret: conf.key.cons_sec,
     access_token_key: conf.key.acc_token,
@@ -19,12 +19,13 @@ var bot = new twitter({
 });
 
 // RSS の URL
-var shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml',
-    yuka_rss = 'http://www.earlywing.co.jp/category/blog/feed/',
-    minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml',
-    rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
+const shiori_rss = 'http://feedblog.ameba.jp/rss/ameblo/mikami-shiori/rss20.xml',
+      yuka_rss = 'http://www.earlywing.co.jp/category/blog/feed/',
+      minami_rss = 'http://feedblog.ameba.jp/rss/ameblo/00dpd/rss20.xml',
+      rumi_rss = 'http://feedblog.ameba.jp/rss/ameblo/rumiokubo/rss20.xml';
 
-var shiori, yuka, minami, rumi;
+// 確認時のタイトルと URL
+let shiori, yuka, minami, rumi;
 
 exports.func = function () {
 
@@ -32,7 +33,7 @@ exports.func = function () {
         // 1. 直近の記事タイトルを読み込む
         .then(function () {
             return new Promise(function (resolve, reject) {
-                var text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
+                const text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
                 /** 
                  * 確認前の最新の記事タイトルを格納
                  * [0]: 三上枝織   shiori
@@ -40,7 +41,7 @@ exports.func = function () {
                  * [2]: 津田美波   minami
                  * [3]: 大久保瑠美   rumi    
                  */
-                var title_arr = text.replace(/\r/g, "").split("\n");
+                const title_arr = text.replace(/\r/g, "").split("\n");
                 console.log('Recent titles loaded.');
 
                 resolve(title_arr);
@@ -74,7 +75,7 @@ exports.func = function () {
                                 console.log('yuka-recent:   ' + title_arr[1]);
                                 console.log('yuka-result:   ' + yuka[0]);
 
-                                if (title_arr[1] != yuka[0] && yuka[0].match(/大坪/)) {
+                                if (title_arr[1] != yuka[0] && yuka[0].includes('大坪')) {
                                     tweetUpdate('大坪由佳', yuka);
                                     resolve(true);
                                 } else
@@ -128,8 +129,8 @@ exports.func = function () {
         .then(function (flg) {
             return new Promise(function (resolve, reject) {
                 if (flg) {
-                    var text = shiori[0] + '\n' + yuka[0] + '\n'
-                        + minami[0] + '\n' + rumi[0];
+                    const text = shiori[0] + '\n' + yuka[0] + '\n'
+                            + minami[0] + '\n' + rumi[0];
                     fs.writeFileSync('b_log.txt', text, function (err) {
                         if (!err)
                             console.log('Log update succeeded.');
@@ -161,8 +162,9 @@ exports.func = function () {
  */
 function tweetUpdate(head, data) {
 
-    var tweet_body = '【ブログ更新】' + head + ': ' + data[0] + '\n' + data[1];
+    const tweet_body = '【ブログ更新】' + head + ': ' + data[0] + '\n' + data[1];
     console.log(tweet_body);
+    
     bot.post(
         'statuses/update',
         { status: tweet_body },
@@ -175,6 +177,7 @@ function tweetUpdate(head, data) {
             }
         }
     );
+    
 }
 
 /**
@@ -184,17 +187,17 @@ function tweetUpdate(head, data) {
  */
 function checkRSS(url, callback) {
 
-    var fp_req = request(url);
-    var feedparser = new FeedParser();
-    var result;
-    var items = [];
+    const fp_req = request(url),
+          feedparser = new FeedParser();
+    let result,
+        items = [];
 
     fp_req.on('error', function (error) {
         // Request error
     });
 
     fp_req.on('response', function (res) {
-        var stream = this;
+        let stream = this;
         if (res.statusCode != 200) {
             return this.emit('error', new Error('Bad status code'));
         }
