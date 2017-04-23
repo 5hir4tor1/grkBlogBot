@@ -47,7 +47,7 @@ exports.func = async () => {
     const yukaRes = await checkRSS(yukaRss);
     console.log('yuka-recent:   ' + titleArr[1]);
     console.log('yuka-result:   ' + yukaRes[0]);
-    if (titleArr[1] != yukaRes[0]) {
+    if (titleArr[1] != yukaRes[0] && yukaRes[0].match(/大坪由佳/g)) {
         tweetUpdate('大坪由佳', yukaRes);
         flg = true;
     }
