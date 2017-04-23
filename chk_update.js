@@ -34,12 +34,12 @@ exports.func = function () {
         .then(function () {
             return new Promise(function (resolve, reject) {
                 const text = fs.readFileSync('b_log.txt', { encoding: "utf8" });
-                /** 
+                /**
                  * 確認前の最新の記事タイトルを格納
                  * [0]: 三上枝織   shiori
                  * [1]: 大坪由佳     yuka
                  * [2]: 津田美波   minami
-                 * [3]: 大久保瑠美   rumi    
+                 * [3]: 大久保瑠美   rumi
                  */
                 const title_arr = text.replace(/\r/g, "").split("\n");
                 console.log('Recent titles loaded.');
@@ -162,9 +162,9 @@ exports.func = function () {
  */
 function tweetUpdate(head, data) {
 
-    const tweet_body = '【ブログ更新】' + head + ': ' + data[0] + '\n' + data[1];
+    const tweet_body = '【ブログ更新】' + head + ': ' + data[0] + '\n' + data[1] + '#yuruyuri';
     console.log(tweet_body);
-    
+
     bot.post(
         'statuses/update',
         { status: tweet_body },
@@ -177,7 +177,7 @@ function tweetUpdate(head, data) {
             }
         }
     );
-    
+
 }
 
 /**
